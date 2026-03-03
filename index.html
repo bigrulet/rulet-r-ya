@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Rulet İBO Analiz Botu</title>
+
+<style>
+body{
+  margin:0;
+  min-height:100vh;
+  background:url('arka-plan.jpg') no-repeat center center fixed;
+  background-size:cover;
+  font-family:Arial, sans-serif;
+}
+
+.screen{
+  display:none;
+  min-height:100vh;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+}
+.active{display:flex}
+
+.box{
+  background:rgba(255,255,255,0.95);
+  padding:30px 40px;
+  border-radius:25px;
+  box-shadow:0 0 40px gold;
+  text-align:center;
+}
+
+.title{font-size:52px;font-weight:900}
+.sub{font-size:22px;margin-bottom:20px}
+
+input,button{
+  padding:14px;
+  font-size:20px;
+  margin:8px;
+  border-radius:8px;
+  border:none;
+  width:260px;
+}
+button{background:gold;font-weight:bold;cursor:pointer}
+
+/* TEKER */
+.wheel{
+  width:300px;height:300px;
+  border-radius:50%;
+  border:12px solid gold;
+  background:url('rulet-teker.png') center/cover no-repeat;
+  animation:spin 6s linear infinite;
+  margin:20px 0;
+}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+/* ANALİZ */
+#analysis{
+  background:white;
+  padding:20px 30px;
+  border-radius:15px;
+  font-size:36px;
+  font-weight:bold;
+  margin:20px;
+  text-align:center;
+  box-shadow:0 0 25px gold;
+}
+
+/* MASA */
+.board{
+  background:white;
+  padding:25px;
+  border-radius:20px;
+  box-shadow:0 0 30px gold;
+}
+.roulette{
+  display:grid;
+  grid-template-columns:repeat(13,70px);
+  gap:6px;
+}
+.num{
+  font-size:22px;
+  text-align:center;
+  padding:16px 0;
+  border-radius:8px;
+  cursor:pointer;
+  color:white;
+  font-weight:bold;
+}
+.red{background:#b00000}
+.black{background:black}
+.zero{background:green}
+.empty{background:transparent}
+</style>
+</head>
+
+<body>
+
+<!-- GİRİŞ -->
+<div id="loginScreen" class="screen active">
+  <div class="box">
+    <div class="title">RULET RÜYA</div>
+    <div class="sub">ANALİZ PROGRAMINA HOŞGELDİNİZ</div>
+    <input id="pass" type="password" placeholder="Şifre">
+    <button onclick="doLogin()">Giriş Yap</button>
+  </div>
+</div>
+
+<!-- PANEL -->
+<div id="panelScreen" class="screen">
+  <div class="wheel"></div>
+
+  <div id="analysis">
+    🎯 SEÇİLEN 🎯 ➤➤➤ X<br><br>
+    ⏳ ANALİZ ⏳ ➤➤➤ X<br><br>
+    <span style="text-decoration:underline;font-weight:900">
+      ⚠️ 4’LÜ-5’Lİ ŞEKİLDE AL ⚠️
+    </span>
+  </div>
+
+  <div class="board">
+    <div class="roulette" id="roulette"></div>
+  </div>
+</div>
+
+<script>
+/* ===============================
+   SINIRSIZ ŞİFRE LİSTESİ
+   BURAYA EKLEME YAPACAKSIN
+================================ */
+
+const sifreler = [
+  "1515"
+  // İSTEDİĞİN KADAR EKLE
+];
+
+/* GİRİŞ */
+function doLogin(){
+  const girilen = document.getElementById("pass").value.trim();
+  if(sifreler.includes(girilen)){
+    loginScreen.classList.remove("active");
+    panelScreen.classList.add("active");
+  }else{
+    alert("Hatalı şifre");
+  }
+}
+
+/* RULET */
+const redNumbers=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+const results={0:'4-31',1:'5-9',2:'6-32',3:'15-29',4:'0-17',5:'20-30',6:'2-30',7:'9-26',8:'13-16',9:'1-28',10:'1-11',11:'5-6',12:'18-32',13:'17-23',14:'16-29',15:'3-25',16:'23-31',17:'4-9',18:'14-35',19:'17-26',20:'18-24',21:'0-6',22:'12-20',23:'33-36',24:'8-14',25:'13-14',26:'4-28',27:'8-25',28:'0-36',29:'3-31',30:'24-27',31:'7-33',32:'2-35',33:'9-10',34:'11-21',35:'29-32',36:'10-34'};
+
+const layout=[
+  [null,3,6,9,12,15,18,21,24,27,30,33,36],
+  [0,2,5,8,11,14,17,20,23,26,29,32,35],
+  [null,1,4,7,10,13,16,19,22,25,28,31,34]
+];
+
+const table=document.getElementById("roulette");
+
+layout.forEach(row=>{
+  row.forEach(n=>{
+    if(n===null){
+      const e=document.createElement("div");
+      e.className="empty";
+      table.appendChild(e);
+    }else{
+      const d=document.createElement("div");
+      let c="black";
+      if(n===0)c="zero";
+      else if(redNumbers.includes(n))c="red";
+      d.className="num "+c;
+      d.innerText=n;
+      d.onclick=()=>{
+        analysis.style.color=c==="red"?"red":c==="black"?"black":"green";
+        analysis.innerHTML=
+          "🎯 SEÇİLEN 🎯 ➤➤➤ <b>"+n+"</b><br><br>"+
+          "⏳ ANALİZ ⏳ ➤➤➤ <b>"+results[n]+"</b><br><br>"+
+          "<span style='text-decoration:underline;font-weight:900'>⚠️ 4’LÜ-5’Lİ ŞEKİLDE AL ⚠️</span>";
+      }
+      table.appendChild(d);
+    }
+  });
+});
+</script>
+
+</body>
+</html>
